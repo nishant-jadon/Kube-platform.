@@ -1,7 +1,7 @@
 # Kube-Platform
 
-## Prepare Each of the Servers for K8s
-OS setup to be ready to handle our kubernetes deployment via kubeadm. 
+## Prepare ALL Servers for Kubernetes (K8s)
+OS setup to be ready to handle our kubernetes deployment via kubeadm on ```centos 7```
 
 
 ### Step #1
@@ -76,7 +76,9 @@ sysctl --system
 systemctl restart docker
 ```
 
-### Step #8
+## Setup Kubernetes Cluster on Master Node
+
+### Step #1
 Setup Kubernetes Cluster on Master Node
 We’re about ready to initialize our kubernetes cluster but I wanted to take a second to mention that we’ll be using Flannel as the network plugin to enable our pods to communicate with one another. You’re free to use other network plugins such as Calico or Cillium but this post focuses on the Flannel plugin specifically.
 
@@ -84,13 +86,14 @@ Let’s run kubeadm init on our master node with the –pod-network switch neede
 
 ```kubeadm init --pod-network-cidr=10.244.0.0/16```
 
-### Step #9
+### Step #2
 Setup environment
 
 ```
 export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl get nodes
 ```
-### Step #10
+### Step #3
 Deploying network components Flannel
 
 ```
@@ -98,7 +101,7 @@ wget https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65
 kubectl create -f kube-flannel.yml
 ```
 
-### Step #11
+### Step #4
 Deploying Dashboard
 
 ```
@@ -106,7 +109,7 @@ wget https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/r
 kubectl create -f kubernetes-dashboard.yaml
 ```
 
-### Node Setup
+## Node Setup
 
 After the initialization is complete you should have a working kubernetes master node setup. 
 Below is sample, you have to take output of ```Step #8```
