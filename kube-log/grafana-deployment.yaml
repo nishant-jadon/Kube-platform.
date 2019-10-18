@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: kubelog
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - image: grafana/grafana:latest
+        name: grafana-image
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            value: "admin2675"
+        ports:
+        - name: http
+          containerPort: 3000
+        volumeMounts:
+        - mountPath: /grafana
+          name: grafana-volume-empty
+        livenessProbe:
+          httpGet:
+            port: http
+          initialDelaySeconds: 1
+        readinessProbe:
+          httpGet:
+            port: http
+          initialDelaySeconds: 1
+      volumes:
+      - emptyDir: {}
+        name: grafana-volume-empty
