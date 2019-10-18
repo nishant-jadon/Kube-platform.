@@ -51,7 +51,7 @@ Install some of the tools we’ll need on our servers including kubeadm, kubectl
 ```yum install -y git curl wget docker```
 
 #### Docker log setup
-Remove ```journald``` log driver
+Installing docker in CentOS 7, which force docker to run log output to journald. The default behavior is to write these logs to json.log files. So, need to modify ```/etc/sysconfig/docker``` file in ```OPTION``` section.
 
 Modify ```/etc/sysconfig/docker``` file as follows.
 
