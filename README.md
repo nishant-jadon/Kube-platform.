@@ -141,11 +141,27 @@ kubectl get nodes
 kubectl get all
 ```
 
-## Exit container cleanup command
+## TIPS
 
-```
-docker rm `docker ps -a | grep -v CONTAINER | grep Exited | awk '{print $1}'`
-```
+#### Exit container cleanup command
+
+``` docker rm `docker ps -a | grep -v CONTAINER | grep Exited | awk '{print $1}'` ```
+
+#### permanently save the namespace for all subsequent kubectl commands in that context
+
+``` kubectl config set-context --current --namespace=<NAME-SPACE> ```
+
+#### kubens helps you switch between Kubernetes namespaces smoothly
+
+```kubens```
+
+#### kubectx helps you switch between clusters back and forth
+
+```kubectx```
+
+#### Cheatsheet
+
+```https://kubernetes.io/docs/reference/kubectl/cheatsheet/```
 
 ## Feedback
 
