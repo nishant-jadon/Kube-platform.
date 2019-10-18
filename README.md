@@ -47,8 +47,14 @@ EOF
 ###  Step #5
 Install some of the tools we’ll need on our servers including kubeadm, kubectl, kubelet, and docker.
 
-#### Installation with speceifc version
+##### To know version details
+
+```curl -s https://packages.cloud.google.com/apt/dists/kubernetes-xenial/main/binary-amd64/Packages | grep Version | awk '{print $2}' | more```
+
+#### Installation with speceifc version (1.11.5)
 ```yum install -y git curl wget docker kubelet-1.11.5 kubeadm-1.11.5 kubectl-1.11.5 kubernetes-cni-0.6.0 --disableexcludes=kubernetes```
+
+##### Note: If you face any problem (getting error during installation) check ```Kubernetes CNI``` version
 
 #### Installation with latest version
 ```yum install -y docker kubelet kubeadm kubectl --disableexcludes=kubernetes```
