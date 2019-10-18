@@ -134,3 +134,21 @@ After the initialization is complete you should have a working kubernetes master
 Below is sample, you have to take output of ```Setup Kubernetes Cluster on Master Node - Step #1```
 
 ```kubeadm join <MASTER-IP>:6443 --token 1cwfqy.t8955yqboh8jiina --discovery-token-ca-cert-hash sha256:3a4b397a3453932f41374ab48b24397c72b281db696c71a6ec530ac1243d5a29```
+
+## Check status from master host and get console URL
+```
+kubectl get nodes
+kubectl get all
+```
+
+## Exit container cleanup command
+
+```
+docker rm `docker ps -a | grep -v CONTAINER | grep Exited | awk '{print $1}'`
+```
+
+## Feedback
+
+We'll love to hear feedback and ideas on how we can make it more useful. Just create an issue.
+
+Thanks !!
