@@ -1,7 +1,8 @@
 # Kube-Platform
+Vanila Kubernetes Platform
 
 ## Prepare ALL Servers for Kubernetes (K8s)
-OS setup to be ready to handle our kubernetes deployment via kubeadm on ```centos 7```
+OS ```centos 7``` to be ready before hand to start kubernetes deployment using kubeadm
 
 
 ### Step #1
