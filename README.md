@@ -131,6 +131,6 @@ kubectl create -f kubernetes-dashboard.yaml
 ## Node Setup
 
 After the initialization is complete you should have a working kubernetes master node setup. 
-Below is sample, you have to take output of ```Step #8```
+Below is sample, you have to take output of ```Setup Kubernetes Cluster on Master Node - Step #1```
 
-```kubeadm join 10.128.0.35:6443 --token 1cwfqy.t8955yqboh8jiina --discovery-token-ca-cert-hash sha256:3a4b397a3453932f41374ab48b24397c72b281db696c71a6ec530ac1243d5a29```
+```kubeadm join <MASTER-IP>:6443 --token 1cwfqy.t8955yqboh8jiina --discovery-token-ca-cert-hash sha256:3a4b397a3453932f41374ab48b24397c72b281db696c71a6ec530ac1243d5a29```
