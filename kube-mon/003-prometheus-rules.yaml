@@ -50,6 +50,14 @@ data:
           for: 5m
           labels:
             severity: critical
+        - alert: Kubelet Down
+          annotations:
+            message: Kubernetes Kubelet Down
+          expr: |
+            up{job="kubernetes-nodes-kubelet"} == 0
+          for: 5m
+          labels:
+            severity: critical            
 
       - name: Kubernetes-system
         rules:
@@ -57,18 +65,18 @@ data:
           annotations:
             message: A client certificate used to authenticate to the apiserver is expiring in less than 7.0 days.
           expr: |
-            apiserver_client_certificate_expiration_seconds_count{job="kubernetes-apiservers"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kubernetes-apiservers"}[5m]))) < 604800
+            sum(apiserver_client_certificate_expiration_seconds_bucket{le="604800"}) > 0
           labels:
             severity: warning
         - alert: KubeClient Certificate Expiration
           annotations:
             message: A client certificate used to authenticate to the apiserver is expiring in less than 24 hrs.
           expr: |
-            apiserver_client_certificate_expiration_seconds_count{job="kubernetes-apiservers"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kubernetes-apiservers"}[5m]))) < 86400
+            sum(apiserver_client_certificate_expiration_seconds_bucket{le="86400"}) > 0
           labels:
             severity: critical
 
-        - alert: Kube Node NotReady
+        - alert: Node NotReady
           annotations:
             message: Kubernetes Node {{ $labels.node }} NotReady more than 5 minutes
           expr: |
@@ -85,7 +93,7 @@ data:
           labels:
             severity: warning
 
-        - alert: Kube Pod CrashLooping
+        - alert: Pod CrashLooping
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.'
           expr: |
