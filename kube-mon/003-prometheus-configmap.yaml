@@ -183,7 +183,7 @@ data:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
 
-    - job_name: 'kube-state-metrics'
+    - job_name: 'kubernetes-state-metrics'
       static_configs:
       - targets: ['kube-state-metrics.kubemon.svc.cluster.local:8080']
 
