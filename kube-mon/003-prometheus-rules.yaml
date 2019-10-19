@@ -127,6 +127,15 @@ data:
           for: 5m
           labels:
             severity: critical
+            
+        - alert: Pod Frequently Restarting
+          annotations:
+            message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting frequently'
+          expr: |
+            increase(kube_pod_container_status_restarts_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical            
 
         - alert: Kube Pod NotReady
           annotations:
