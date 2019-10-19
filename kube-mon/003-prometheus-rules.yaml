@@ -54,11 +54,10 @@ data:
           annotations:
             message: Kubernetes Kubelet Down
           expr: |
-            up{job="kubernetes-nodes-kubelet"} == 0
+            up{job="kubernetes-kubelet"} == 0
           for: 5m
           labels:
             severity: critical            
-
       - name: Kubernetes-system
         rules:
         - alert: Kubernetes Certificate Expiration
@@ -75,12 +74,11 @@ data:
             sum(apiserver_client_certificate_expiration_seconds_bucket{le="86400"}) > 0
           labels:
             severity: critical
-
         - alert: Node NotReady
           annotations:
             message: Kubernetes Node {{ $labels.node }} NotReady more than 5 minutes
           expr: |
-            kube_node_status_condition {k8s_app="kube-state-metrics",condition="Ready",status="true"} == 0
+            kube_node_status_condition {job="kube-state-metrics",condition="Ready",status="true"} == 0
           for: 5m
           labels:
             severity: critical
@@ -114,16 +112,15 @@ data:
           annotations:
             message: 'Too Many Pods is running at on node {{ $labels.instance }} (current value: {{ $value }}).'
           expr: |
-            max(kubelet_running_pod_count{job="kubernetes-nodes-kubelet"}) by(instance) > 95
+            max(kubelet_running_pod_count{job="kubernetes-kubelet"}) by(instance) > 95
           for: 5m
           labels:
             severity: warning
-
         - alert: Pod CrashLooping
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.'
           expr: |
-            rate(kube_pod_container_status_restarts_total{k8s_app="kube-state-metrics"}[5m]) * 60 * 5 > 0
+            rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[5m]) * 60 * 5 > 0
           for: 5m
           labels:
             severity: critical
@@ -136,16 +133,14 @@ data:
           for: 5m
           labels:
             severity: critical            
-
         - alert: Kube Pod NotReady
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 5 minutes.'
           expr: |
-            sum by (namespace, pod) (kube_pod_status_phase{k8s_app="kube-state-metrics", phase=~"Failed|Pending|Unknown"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!="Job"}) > 0
+            sum by (namespace, pod) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Failed|Pending|Unknown"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!="Job"}) > 0
           for: 5m
           labels:
             severity: critical
-
         - alert: Kube CPU Overcommit
           annotations:
             message: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
@@ -162,7 +157,6 @@ data:
           for: 5m
           labels:
             severity: warning
-
       - name: Deployment
         rules:
         - alert: Deployment at 0 Replicas
