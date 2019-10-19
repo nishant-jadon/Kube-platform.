@@ -84,6 +84,32 @@ data:
           for: 5m
           labels:
             severity: critical
+            
+        - alert: DaemonSet Rollout Stuck
+          annotations:
+            message: Only % of desired pods scheduled and ready for daemon
+          expr: |
+            kube_daemonset_status_number_ready / kube_daemonset_status_desired_number_scheduled * 100 < 100
+          for: 5m
+          labels:
+            severity: critical    
+        - alert: DaemonSet NotScheduled
+          annotations:
+            message: A number of daemonsets are not scheduled
+          expr: |
+            kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_current_number_scheduled > 0
+          for: 5m
+          labels:
+            severity: critical    
+        - alert: DaemonSet MissScheduled
+          annotations:
+            message: A number of daemonsets are running where they are not supposed to run.
+          expr: |
+            kube_daemonset_status_number_misscheduled > 0
+          for: 5m
+          labels:
+            severity: critical              
+            
         - alert: Too Many Pods
           annotations:
             message: 'Too Many Pods is running at on node {{ $labels.instance }} (current value: {{ $value }}).'
