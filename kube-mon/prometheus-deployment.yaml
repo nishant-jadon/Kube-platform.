@@ -10,7 +10,7 @@ spec:
       labels:
         app: prometheus-server
     spec:
-      serviceAccountName: kubemon
+      serviceAccountName: prometheus
       containers:
         - name: prometheus
           image: prom/prometheus:v2.4.3
