@@ -163,7 +163,7 @@ data:
             sum(increase(kube_pod_container_status_restarts_total{namespace!="kube-system",pod_template_hash=""}[1m])) by (pod,namespace,container) > 0
           for: 0m
           labels:
-            team: dev
+            severity: warning
         - alert: High Memory Usage of Container
           annotations:
             summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of Memory Limit
@@ -171,7 +171,7 @@ data:
             ((( sum(container_memory_usage_bytes{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name)  / sum(container_spec_memory_limit_bytes{image!="",container_name!="POD",namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100 ) < +Inf ) > 75
           for: 5m
           labels:
-            team: dev
+            severity: warning
         - alert: High CPU Usage of Container
           annotations:
             summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of CPU Limit
@@ -179,7 +179,7 @@ data:
             ((sum(irate(container_cpu_usage_seconds_total{image!="",container_name!="POD", namespace!="kube-system"}[30s])) by (namespace,container_name,pod_name) / sum(container_spec_cpu_quota{image!="",container_name!="POD", namespace!="kube-system"} / container_spec_cpu_period{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100)  > 75
           for: 5m
           labels:
-            team: dev
+            severity: warning
       - name: Nodes
         rules:
         - alert: High Node Memory Usage
