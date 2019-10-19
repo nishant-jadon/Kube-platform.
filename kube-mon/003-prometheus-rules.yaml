@@ -61,14 +61,14 @@ data:
 
       - name: Kubernetes-system
         rules:
-        - alert: KubeClient Certificate Expiration
+        - alert: Kubernetes Certificate Expiration
           annotations:
             message: A client certificate used to authenticate to the apiserver is expiring in less than 7.0 days.
           expr: |
             sum(apiserver_client_certificate_expiration_seconds_bucket{le="604800"}) > 0
           labels:
             severity: warning
-        - alert: KubeClient Certificate Expiration
+        - alert: Kubernetes Certificate Expiration
           annotations:
             message: A client certificate used to authenticate to the apiserver is expiring in less than 24 hrs.
           expr: |
