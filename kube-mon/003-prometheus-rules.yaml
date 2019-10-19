@@ -57,7 +57,16 @@ data:
             up{job="kubernetes-kubelet"} == 0
           for: 5m
           labels:
-            severity: critical            
+            severity: critical   
+        - alert: Kube State Metric Down
+          annotations:
+            message: Kube State Metric Down
+          expr: |
+            up{job="kube-state-metrics"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            
       - name: Kubernetes-system
         rules:
         - alert: Kubernetes Certificate Expiration
