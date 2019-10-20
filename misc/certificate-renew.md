@@ -10,7 +10,7 @@ The Kubernetes cluster certificates have a lifespan of one year. If the Kubernet
 
 Take a backup of your existing certificates
 
-```cp -rf /etc/kubernetes /opt/```
+```cp -rf /etc/kubernetes /opt/kubernetes-<DATE>```
 
 ### Procedure
 
@@ -24,7 +24,10 @@ Serach for ```kubeadm.yaml``` MasterConfiguration file
 
 Remove the existing certificate and key files
 
-```rm /etc/kubernetes/pki/{apiserver*,front-proxy-client*}```
+```
+rm -f /etc/kubernetes/pki/{apiserver*,front-proxy-client*}
+rm -f /etc/kubernetes/pki/etcd/{server*,peer*,healthcheck*}
+```
 
 #### Step #3
 
@@ -36,12 +39,7 @@ Create new certificates
 
 Remove the old configuration files
 
-```
-rm /etc/kubernetes/admin.conf
-rm /etc/kubernetes/kubelet.conf
-rm /etc/kubernetes/controller-manager.conf
-rm /etc/kubernetes/scheduler.conf
-```
+```rm -f /etc/kubernetes/admin.conf /etc/kubernetes/kubelet.conf /etc/kubernetes/controller-manager.conf rm /etc/kubernetes/scheduler.conf ```
 
 #### Step #5
 
