@@ -10,7 +10,7 @@ The Kubernetes cluster certificates have a lifespan of one year. If the Kubernet
 
 Take a backup of your existing certificates
 
-```cp -rf /etc/kubernetes /opt/kubernetes-<DATE>```
+``` cp -rf /etc/kubernetes /opt/kubernetes-`date +%d%m%y"-"%H%M%S` ```
 
 ### Procedure
 
