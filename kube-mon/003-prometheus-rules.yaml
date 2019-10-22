@@ -57,7 +57,7 @@ data:
             up{job="kubernetes-kubelet"} == 0
           for: 5m
           labels:
-            severity: critical   
+            severity: critical            
         - alert: Kube State Metric Down
           annotations:
             message: Kube State Metric Down
@@ -66,7 +66,7 @@ data:
           for: 5m
           labels:
             severity: critical
-            
+
       - name: Kubernetes-system
         rules:
         - alert: Kubernetes Certificate Expiration
@@ -133,6 +133,15 @@ data:
           for: 5m
           labels:
             severity: critical
+
+        - alert: Pod Waiting
+          annotations:
+            message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} is waiting for this reason ({{ $labels.reason }})'
+          expr: |
+            sum by(namespace, pod, reason) (kube_pod_container_status_waiting_reason{job="kube-state-metrics",reason=~"CrashLoopBackOff|ErrImagePull|ImagePullBackOff"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!="Job"}) > 0
+          for: 5m
+          labels:
+            severity: critical
             
         - alert: Pod Frequently Restarting
           annotations:
@@ -142,14 +151,16 @@ data:
           for: 5m
           labels:
             severity: critical            
+
         - alert: Kube Pod NotReady
           annotations:
-            message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 5 minutes.'
+            message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state ({{ $labels.phase }}) for longer than 5 minutes.'
           expr: |
-            sum by (namespace, pod) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Failed|Pending|Unknown"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!="Job"}) > 0
+            sum by (namespace, pod, phase) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Failed|Pending|Unknown"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!="Job"}) > 0
           for: 5m
           labels:
             severity: critical
+
         - alert: Kube CPU Overcommit
           annotations:
             message: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
@@ -158,6 +169,7 @@ data:
           for: 5m
           labels:
             severity: warning
+
         - alert: Kube Memory Overcommit
           annotations:
             message: Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
@@ -166,6 +178,7 @@ data:
           for: 5m
           labels:
             severity: warning
+
       - name: Deployment
         rules:
         - alert: Deployment at 0 Replicas
