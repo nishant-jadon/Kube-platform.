@@ -19,9 +19,11 @@
 
 ```kubectl create secret generic loki -n kubelog --from-file=loki.yaml```
 
-#### Step #5 Create Statefulset
+#### Step #5 Create Statefulset 
 
 ```kubectl create -f loki-statefulset.yaml```
+
+##### Note: Before moving to next step make sure ```loki statefulset``` UP and running
 
 #### Step #6 Create service
 
