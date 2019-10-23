@@ -7,26 +7,27 @@
 
 ```kubectl create ns kubelog```
 
-#### Step #2 Create Configmap
+#### Step #2 Create ServiceAccount
 
-```kubectl create ns kubelog```
+```kubectl create -f loki-fluent-bit-account.yaml```
 
-#### Step #3 Create secret
+#### Step #3 Create Configmap
+
+```kubectl create -f fluent-bit-loki-cm.yaml```
+
+#### Step #4 Create secret
 
 ```kubectl create secret generic loki -n kubelog --from-file=loki.yaml```
 
-#### Step #4 Create Statefulset
+#### Step #5 Create Statefulset
 
-```kubectl create ns kubelog```
+```kubectl create -f loki-statefulset.yaml```
 
-#### Step #5 Create service
+#### Step #6 Create service
 
-```kubectl create ns kubelog```
+```kubectl create -f loki-svc.yaml```
 
-#### Step #6 Create Daemonset
+#### Step #7 Create Daemonset
 
-```kubectl create ns kubelog```
-
-
-
+```kubectl create -f fluent-bit-loki-ds.yaml```
 
