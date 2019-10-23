@@ -1,4 +1,4 @@
-# Loki 
+# Kubernetes logging with Loki and Fluent-bit
 
 
 ### Install Loki & Fluent-bit in Kubernetes
