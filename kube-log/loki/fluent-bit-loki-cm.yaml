@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: fluent-bit-loki
+  name: loki-fluent-bit-loki
+  namespace: kubelog
+data:
+  fluent-bit.conf: |-
+    [SERVICE]
+        Flush          1
+        Daemon         Off
+        Log_Level      warn
+        Parsers_File   parsers.conf
+    [INPUT]
+        Name           tail
+        Tag            kube.*
+        Path           /var/log/containers/*.log
+        Parser         docker
+        DB             /run/fluent-bit/flb_kube.db
+        Mem_Buf_Limit  5MB
+    [FILTER]
+        Name           kubernetes
+        Match          kube.*
+        Kube_URL       https://kubernetes.default.svc:443
+        Merge_Log On
+    [Output]
+        Name loki
+        Match *
+        Url http://loki:3100/api/prom/push
+        Labels {job="fluent-bit"}
+        RemoveKeys kubernetes,stream
+        LabelMapPath /fluent-bit/etc/labelmap.json
+        LineFormat json
+        LogLevel warn
+  labelmap.json: |-
+    {
+      "kubernetes": {
+        "container_name": "container",
+        "host": "node",
+        "labels": {
+          "app": "app",
+          "release": "release"
+        },
+        "namespace_name": "namespace",
+        "pod_name": "instance"
+      },
+      "stream": "stream"
+    }
+  parsers.conf: |-
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
