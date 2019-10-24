@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: loki-stack
+  name: loki-loki-stack-test
+  namespace: kubelog
+data:
+  test.sh: |
+    #!/usr/bin/env bash
+
+    LOKI_URI="http://${LOKI_SERVICE}:${LOKI_PORT}"
+
+    function setup() {
+      apk add -u curl jq
+      until (curl -s ${LOKI_URI}/api/prom/label/app/values | jq -e '.values[] | select(. == "loki")'); do
+        sleep 1
+      done
+    }
+
+    @test "Has labels" {
+      curl -s ${LOKI_URI}/api/prom/label | \
+      jq -e '.values[] | select(. == "app")'
+    }
+
+    @test "Query log entry" {
+      curl -sG ${LOKI_URI}/api/prom/query?limit=10 --data-urlencode 'query={app="loki"}' | \
+      jq -e '.streams[].entries | length >= 1'
+    }
+    @test "Push log entry" {
+      local timestamp=$(date -Iseconds -u | sed 's/UTC/.000000000+00:00/')
+      local data=$(jq -n --arg timestamp "${timestamp}" '{"streams": [{"labels": "{app=\"loki-test\"}", "entries": [{"ts": $timestamp, "line": "foobar"}]}]}')
+
+      curl -s -X POST -H "Content-Type: application/json" ${LOKI_URI}/api/prom/push -d "${data}"
+
+      curl -sG ${LOKI_URI}/api/prom/query?limit=1 --data-urlencode 'query={app="loki-test"}' | \
+      jq -e '.streams[].entries[].line == "foobar"'
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: fluent-bit-loki
+  name: loki-fluent-bit-loki
+  namespace: kubelog
+data:
+  fluent-bit.conf: |-
+    [SERVICE]
+        Flush          1
+        Daemon         Off
+        Log_Level      warn
+        Parsers_File   parsers.conf
+    [INPUT]
+        Name           tail
+        Tag            kube.*
+        Path           /var/log/containers/*.log
+        Parser         docker
+        DB             /run/fluent-bit/flb_kube.db
+        Mem_Buf_Limit  5MB
+    [FILTER]
+        Name           kubernetes
+        Match          kube.*
+        Kube_URL       https://kubernetes.default.svc:443
+        Merge_Log On
+    [Output]
+        Name           splunk
+        Match          *
+        Host           input-prd-p-vp7svl742rs7.cloud.splunk.com
+        Port           8088
+        TLS            On
+        TLS.Verify     Off
+        Message_Key    kubernetes
+        Splunk_Token   66a7b8f1-b181-49ed-9365-f3f92e4e563a
+    [Output]
+        Name loki
+        Match *
+        Url http://loki:3100/api/prom/push
+        Labels {job="fluent-bit"}
+        RemoveKeys kubernetes,stream
+        LabelMapPath /fluent-bit/etc/labelmap.json
+        LineFormat json
+        LogLevel warn
+  labelmap.json: |-
+    {
+      "kubernetes": {
+        "container_name": "container",
+        "host": "node",
+        "labels": {
+          "app": "app",
+          "release": "release"
+        },
+        "namespace_name": "namespace",
+        "pod_name": "instance"
+      },
+      "stream": "stream"
+    }
+  parsers.conf: |-
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
