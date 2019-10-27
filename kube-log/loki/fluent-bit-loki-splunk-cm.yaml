@@ -62,7 +62,7 @@ data:
         Name           kubernetes
         Match          kube.*
         Kube_URL       https://kubernetes.default.svc:443
-        Merge_Log On
+        Merge_Log      On
     [Output]
         Name           splunk
         Match          *
@@ -73,14 +73,14 @@ data:
         Message_Key    kubernetes
         Splunk_Token   66a7b8f1-b181-49ed-9365-f3f92e4e563a
     [Output]
-        Name loki
-        Match *
-        Url http://loki:3100/api/prom/push
-        Labels {job="fluent-bit"}
-        RemoveKeys kubernetes,stream
-        LabelMapPath /fluent-bit/etc/labelmap.json
-        LineFormat json
-        LogLevel warn
+        Name           loki
+        Match          *
+        Url            http://loki:3100/api/prom/push
+        Labels         {job="fluent-bit"}
+        RemoveKeys     kubernetes,stream
+        LabelMapPath   /fluent-bit/etc/labelmap.json
+        LineFormat     json
+        LogLevel       warn
   labelmap.json: |-
     {
       "kubernetes": {
