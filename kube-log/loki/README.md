@@ -39,7 +39,7 @@ Sending logs to splunk, need to add following content to ```flunt-bit``` config 
 
 ### Step: #1 Splunk cloud setup.
 
-I use 15days trial Splunk cloud setup using ```https://www.splunk.com/getsplunk/cloud_trial``` & got url ```prd-p-vp7svl742rs7.cloud.splunk.com``` which used in config file.
+I took 15days trial Splunk cloud setup using ```https://www.splunk.com/getsplunk/cloud_trial``` & got url ```prd-p-vp7svl742rs7.cloud.splunk.com``` which used in config file.
 
 ### Step: #2 Configure HTTP Event Collector on Splunk Enterprise
 
@@ -71,7 +71,7 @@ To use HEC, you must configure at least one token & make sure its enabled.
 
 ### Step: #3 Configuring Fluent-bit configuration file
 
-Note: Add ```input-``` before splunk url which was ccreated in Step: #1
+Note: Add ```input-``` before splunk url which was created in Step: #1
 
 ```
     [Output]
