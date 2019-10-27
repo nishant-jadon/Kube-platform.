@@ -55,6 +55,7 @@ data:
         Name           tail
         Tag            kube.<namespace_name>.<container_name>.<pod_name>.<docker_id>-
         Tag_Regex      (?<pod_name>[a-z0-9](?:[-a-z0-9]*[a-z0-9])?(?:\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)_(?<namespace_name>[^_]+)_(?<container_name>.+)-(?<docker_id>[a-z0-9]{64})\.log$
+        # Excluding kube-system & kubelog namespaces pod logs
         Exclude_Path   /var/log/containers/*kubelog*,/var/log/containers/*kube-system*
         Path           /var/log/containers/*.log
         Parser         docker
@@ -80,6 +81,7 @@ data:
         Splunk_Token   66a7b8f1-b181-49ed-9365-f3f92e4e563a
     [Output]
         Name           loki
+        # Sending only default namespaces pod logs
         Match          kube.default.*
         Url            http://loki:3100/api/prom/push
         Labels         {job="fluent-bit"}
