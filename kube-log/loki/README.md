@@ -35,7 +35,7 @@
 
 
 ## Splunk integration
-Sending logs to splunk, need to add following content to ```flunt-bit``` config file. Splunk output plugin allows to ingest logs into a Splunk Enterprise service through the HTTP Event Collector (HEC) interface. 
+Splunk output plugin allows to ingest logs into a Splunk Enterprise service through the HTTP Event Collector (HEC) interface. 
 
 ### Step: #1 Splunk cloud setup.
 
@@ -71,7 +71,7 @@ To use HEC, you must configure at least one token & make sure its enabled.
 
 ### Step: #3 Configuring Fluent-bit configuration file
 
-Note: Add ```input-``` before splunk url which was created in Step: #1
+Sending logs to splunk, need to add following content to ```flunt-bit``` config file.
 
 ```
     [Output]
@@ -84,6 +84,7 @@ Note: Add ```input-``` before splunk url which was created in Step: #1
         Message_Key    kubernetes
         Splunk_Token   <SPLUNK-TOKEN>
 ```
+Note: Add ```input-``` before splunk url which was created in Step: #1
 
 ##### For Splunk testing use following curl 
 
