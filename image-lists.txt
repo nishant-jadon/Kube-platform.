@@ -1,0 +1,21 @@
+# Kubestate 
+quay.io/coreos/kube-state-metrics:v1.3.0
+k8s.gcr.io/addon-resizer:1.8.3
+
+# NodeExpoter
+prom/node-exporter:v0.16.0
+
+# Promethus
+prom/prometheus:v2.4.3
+
+# Alertmanager
+prom/alertmanager:v0.15.3
+
+# Grafana
+grafana/grafana:latest
+
+# Loki
+grafana/loki:v0.3.0
+
+# Fluent-bit
+grafana/fluent-bit-plugin-loki:0.1
