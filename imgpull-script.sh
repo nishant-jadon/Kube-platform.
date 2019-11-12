@@ -21,8 +21,8 @@ for i in "${imgname[@]}"
 do
 	echo Image name: $i
 	docker pull $i
-  sleep 3
-	imgid=`docker images $i | awk '{print $3}' | grep -v IMAGE`´
+        sleep 3
+	imgid=`docker images $i | awk '{print $3}' | grep -v IMAGE`
 	docker tag $imgid $regsrv/$i
 	docker push $regsrv/$i
 done
