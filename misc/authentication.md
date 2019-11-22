@@ -137,7 +137,7 @@ roleRef:
 - add following in ```deployment``` section above file (kubernetes-dashboard.yaml)
 
 ```
-- --authentication-mode=basic
+- --authentication-mode=token,basic
 ```
 
 #### Step #6 Verify using login in  ```Kubernetes-dashoboard```
