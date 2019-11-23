@@ -72,7 +72,7 @@ show dbs;
 db;
 ```
 
-### Setp #3 MongoDB backup & restore
+### Setp #4 MongoDB backup & restore
 
 
 #### - Install Mongo backup & restore tools
