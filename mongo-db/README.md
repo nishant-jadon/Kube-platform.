@@ -1,4 +1,11 @@
 ## Mongo Setup in Kubernetes
+MongoDB uses multiple PODs. One POD in the cluster is designated as the primary node and receives all write operations, while other PODs are designated as secondary nodes and asynchronously replicate the operations performed by the primary node on their own copies of the data set. Binary logging is enabled by default.
+
+If a primary node fails, an election takes place and the first secondary node receiving a majority of votes becomes the new primary node. This configuration provides a horizontally scalable and fault-tolerant deployment.
+
+If you select an even number of nodes, it’s a good idea to add an arbiter POD. Arbiter POD do not store any data; their function is to provide an additional vote in replica set elections.
+
+The minimum requirement for a MongoDB cluster is to have at least two PODs: one primary and one secondary. A replica set can have up to 50 nodes, but only 7 can be voting members.
 
 ### Setp #1 Install Mongo Database using Statefullset
 
