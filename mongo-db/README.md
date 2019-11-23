@@ -2,6 +2,16 @@
 
 ### Setp #1 Install Mongo Database using Statefullset
 
+#### - Generate a key
+
+```openssl rand -base64 741 > internal-auth-mongodb-keyfile```
+
+#### - Create k8s secrets
+
+```kubectl create secret generic shared-bootstrap-data --from-file=internal-auth-mongodb-keyfile```
+
+#### - Deploy in kubernetes
+
 ```kubectl create -f mongo-arbiter-rs-svc-all-in-one.yaml```
 
 ### Setp #2 Login Mongo 1st POD (mongod-0)
