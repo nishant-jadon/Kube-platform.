@@ -122,4 +122,6 @@ spec:
     targetPort: 27017
     nodePort: 32017
   selector:
-    role: mongo
+    #role: mongo
+    statefulset.kubernetes.io/pod-name: mongod-0
+
