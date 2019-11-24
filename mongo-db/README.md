@@ -173,7 +173,7 @@ db.createUser(
 
 #### - Create record in collection (table) database 
 
-```db.empdb.insert({'name': 'Prasenjit', 'empid': '579078' });```
+```db.empdb.insert({'name': 'Prasenjit', 'empid': '999999' });```
 
 #### - Find record in collection (table) database 
 
@@ -191,6 +191,3 @@ db.auth("employeeUser", "xyz123");
 ```
 
 #### - Basic mongodb guide https://zocada.com/setting-mongodb-users-beginners-guide/ 
-
-
-
