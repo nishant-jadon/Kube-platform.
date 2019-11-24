@@ -30,9 +30,9 @@ then run ```mongo```
 
 ```
 rs.initiate({_id: "MainRepSet", version: 1, members: [
-       { _id: 0, host : "mongod-0.mongodb-service.kubernetes-dashboard.svc.cluster.local:27017" },
-       { _id: 1, host : "mongod-1.mongodb-service.kubernetes-dashboard.svc.cluster.local:27017" },
-       { _id: 2, host : "mongod-arbiter-0.mongodb-service.kubernetes-dashboard.svc.cluster.local:27017" }
+       { _id: 0, host : "mongod-0.mongodb-service.<namespace>.svc.cluster.local:27017" },
+       { _id: 1, host : "mongod-1.mongodb-service.<namespace>.svc.cluster.local:27017" },
+       { _id: 2, host : "mongod-arbiter-0.mongodb-service.<namespace>.svc.cluster.local:27017" }
  ]});
 ```
 
@@ -119,9 +119,13 @@ cp /usr/bin/mongorestore /usr/local/bin/
 ```
 DEST=/root/db_backups/mongo-`date +%d%m%y"-"%H%M%S`
 mkdir -p $DEST
-mongodump -h 10.128.0.33:32017 -u main_admin -p abc123 -o $DEST
+mongodump -h <hostname>:<nodeport> -u main_admin -p abc123 -o $DEST
 ```
 
 #### - MongoDB restore
 
-```mongorestore -h 10.128.0.33:32017 -u main_admin -p abc123 --dir=$DEST```
+```mongorestore -h <hostname>:<nodeport> -u main_admin -p abc123 --dir=$DEST```
+
+### Miscellaneous 
+
+
