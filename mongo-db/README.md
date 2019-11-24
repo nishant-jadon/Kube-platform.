@@ -128,4 +128,7 @@ mongodump -h <hostname>:<nodeport> -u main_admin -p abc123 -o $DEST
 
 ### Miscellaneous 
 
+#### - Basic mongodb guide https://zocada.com/setting-mongodb-users-beginners-guide/ 
+
+
 
