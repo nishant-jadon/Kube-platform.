@@ -154,6 +154,41 @@ mongodump -h <hostname>:<nodeport> -u main_admin -p abc123 -o $DEST
 ```mongorestore -h <hostname>:<nodeport> -u main_admin -p abc123 --dir=$DEST```
 
 ### Miscellaneous 
+Useful mongo commands
+
+#### - Create or Use database
+```use employee;```
+
+#### - Create user with password database
+
+```
+db.createUser(
+  {
+    user: "employeeUser",
+    pwd: "xyz123",
+    roles: [ { role: "readWrite", db: "employee" } ]
+  }
+);
+```
+
+#### - Create record in collection (table) database 
+
+```db.empdb.insert({'name': 'Prasenjit', 'empid': '579078' });```
+
+#### - Find record in collection (table) database 
+
+```
+db.empdb.find();
+show collection;
+```
+
+#### - Find user information 
+
+``` 
+show users;
+db.getUsers( {showCredentials: true} );
+db.auth("employeeUser", "xyz123");
+```
 
 #### - Basic mongodb guide https://zocada.com/setting-mongodb-users-beginners-guide/ 
 
