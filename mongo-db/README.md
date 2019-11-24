@@ -91,6 +91,29 @@ db;
 
 ### Setp #4 MongoDB backup & restore
 
+MongoDB backup & restore works with ```PRIMARY``` POD, before executing mongodump & mongorestore make sure which is PRIMARY POD.
+Just enter any POD ```kubectl exec -it mongod-0 bash``` & run ```mongo``` the shell prompt will inform you. After that run ```db.isMaster();```.
+
+Normally kubernetes service ```mongodb-service-backup``` pointed to ```mongod-0``` POD as PRIMARY if you found PRIMARY is ```mongod-1``` then change service.
+
+```
+#mongo-svc-backkup-restore.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service-backup
+  labels:
+    name: mongo
+spec:
+  type: NodePort
+  ports:
+  - port: 27017
+    targetPort: 27017
+    nodePort: 32017
+  selector:
+    # Change below for PRIMARY mongod-0 OR mongod-1
+    statefulset.kubernetes.io/pod-name: mongod-1
+```
 
 #### - Install Mongo backup & restore tools
 
