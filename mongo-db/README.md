@@ -21,6 +21,10 @@ The minimum requirement for a MongoDB cluster is to have at least two PODs: one 
 
 ```kubectl create -f mongo-arbiter-rs-svc-all-in-one.yaml```
 
+#### - Create service for mongodb backkup & restore remotely
+
+```kubectl delete -f mongo-svc-backkup-restore.yaml```
+
 ### Setp #2 Login Mongo 1st POD (mongod-0)
 
 ```kubectl exec -it mongod-0 bash```
@@ -94,7 +98,7 @@ db;
 MongoDB backup & restore works with ```PRIMARY``` POD, before executing mongodump & mongorestore make sure which is PRIMARY POD.
 Just enter any POD ```kubectl exec -it mongod-0 bash``` & run ```mongo``` the shell prompt will inform you. After that run ```db.isMaster();```.
 
-Normally kubernetes service ```mongodb-service-backup``` pointed to ```mongod-0``` POD as PRIMARY if you found PRIMARY is ```mongod-1``` then change service.
+Normally kubernetes service ```mongodb-service-backup``` pointed to ```mongod-0``` POD as PRIMARY if you found PRIMARY is ```mongod-1``` then change service & run ```kubectl delete -f mongo-svc-backkup-restore.yaml;kubectl delete -f mongo-svc-backkup-restore.yaml```
 
 ```
 #mongo-svc-backkup-restore.yaml
