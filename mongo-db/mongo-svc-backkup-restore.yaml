@@ -1,1 +1,15 @@
-mongod-1
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service-backup
+  labels:
+    name: mongo
+spec:
+  type: NodePort
+  ports:
+  - port: 27017
+    targetPort: 27017
+    nodePort: 32017
+  selector:
+    # Change below for PRIMARY mongod-0 OR mongod-1
+    statefulset.kubernetes.io/pod-name: mongod-0
