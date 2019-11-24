@@ -108,19 +108,3 @@ spec:
             defaultMode: 256
         - name: pvc
           emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongodb-service-backup
-  labels:
-    name: mongo
-spec:
-  type: NodePort
-  ports:
-  - port: 27017
-    targetPort: 27017
-    nodePort: 32017
-  selector:
-    statefulset.kubernetes.io/pod-name: mongod-0
-
