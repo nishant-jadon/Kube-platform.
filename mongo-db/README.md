@@ -176,6 +176,10 @@ mongodump -h <hostname>:<nodeport> -u main_admin -p abc123 -o $DEST
 
 ```mongorestore -h <hostname>:<nodeport> -u main_admin -p abc123 --dir=$DEST```
 
+#### - MongoDB import
+
+```mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -d sample -c students --file students.json```
+
 ### Miscellaneous 
 Useful mongo commands
 
