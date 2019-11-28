@@ -178,7 +178,17 @@ mongodump -h <hostname>:<nodeport> -u main_admin -p abc123 -o $DEST
 
 #### - MongoDB import
 
-```mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -d sample -c students --file students.json```
+```
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c grades -d sample_school grades.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c students -d sample_school students.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c profiles -d samples profiles.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c products -d samples products.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c countries-small -d samples countries-small.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c countries-big -d samples countries-big.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c restaurants -d samples restaurant.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c covers -d sample_library covers.json
+mongoimport --host 10.128.0.33:32017 -u main_admin -p abc123 --authenticationDatabase admin -c books -d sample_library books.json
+```
 
 ### Miscellaneous 
 Useful mongo commands
