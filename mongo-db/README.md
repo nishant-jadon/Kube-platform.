@@ -227,4 +227,4 @@ db.getUsers( {showCredentials: true} );
 db.auth("employeeUser", "xyz123");
 ```
 
-#### - Basic mongodb guide https://zocada.com/setting-mongodb-users-beginners-guide/ 
+#### - Sample mongo database https://github.com/ozlerhakan/mongodb-json-files 
