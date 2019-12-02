@@ -33,7 +33,7 @@ az account show --output table
 
 ##### -  Create the Virtual Network (vnet) and the subnet 
 
-```az network vnet create --resource-group pkar-aks-rg --name pkar-aks-vnet --address-prefixes 192.168.0.0/16 --subnet-name pkarAKSSubnet --subnet-prefix 192.168.1.0/24```
+```az network vnet create --resource-group pkar-aks-rg --name pkar-aks-vnet --address-prefixes 192.168.0.0/16 --subnet-name pkar-aks-subnet --subnet-prefix 192.168.1.0/24```
 
 ##### -  Create a service principal and assign permissions
 The following example output shows the application ID and password for your service principal. These values are used in additional steps to assign a role to the service principal and then create the AKS cluster: Copy output of following command
@@ -44,7 +44,7 @@ To assign the correct delegations in the remaining steps, use the az network vne
 
 ```
 VNET_ID=$(az network vnet show --resource-group pkar-aks-rg --name pkar-aks-vnet --query id -o tsv)
-SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkarAKSSubnet --query id -o tsv)
+SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkar-aks-subnet --query id -o tsv)
 ```
 
 Now assign the service principal for your AKS cluster Contributor permissions on the virtual network using the az role assignment create command. Provide your own <appId> as shown in the output from the previous command to create the service principal:
@@ -77,7 +77,7 @@ az aks create \
 ##### -  Connect to AKS Cluster (Get Credencials & setup environment)
 
 ``` 
-az aks get-credentials --resource-group pkar-aks-rg --name nn-aks-cluster
+az aks get-credentials --resource-group pkar-aks-rg --name pkar-aks-cluster
 kubectl config get-clusters
 kubectl config current-context
 kubectl get nodes
