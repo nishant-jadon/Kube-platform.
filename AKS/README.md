@@ -72,7 +72,7 @@ az aks create \
 
 ##### -  Install kubectl 
 
-``` ```
+```sudo az aks install-cli```
 
 ##### -  Connect to AKS Cluster (Get Credencials & setup environment)
 
