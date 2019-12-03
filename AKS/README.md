@@ -128,15 +128,16 @@ az acr repository list -n pkar-aks-acr -o table
 
 ##### - Use ACR with AKS
 
-- Get the appId for ACR from Service pricipal which we created from earlier command.
+- Get the id of the service principal configured for AKS
 
-``` ```
-
-- Assign reader role to AKS Resource (get the app ID)
-
-```ACR_ID=$(az acr show --name pkar-aks-acr --resource-group pkar-aks-rg --query "id" --output tsv)```
+```CLIENT_ID=$(az aks show --resource-group pkar-aks-rg --name pkar-aks-rg --query "servicePrincipalProfile.clientId" --output tsv)```
 
 - Get the resource ID of ACR
 
-``` az role assignment create --assignee "<appId>" --role Reader --scope $ACR_ID```
+```ACR_ID=$(az acr show --name pkar-aks-acr --resource-group pkar-aks-rg --query "id" --output tsv)```
+
+- Assign reader role to ACR Resource  
+
+``` az role assignment create --assignee $CLIENT_ID --role Reader --scope $ACR_ID```
+
 
