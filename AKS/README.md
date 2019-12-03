@@ -148,4 +148,13 @@ APPS_ID=$(az ad sp list --display-name nn-aks-cluster --query [].appId --output 
 
 ``` az role assignment create --assignee $CLIENT_ID --role Reader --scope $ACR_ID```
 
+##### - ACR commands
 
+```
+az acr list --resource-group pkar-aks-rg --query [].loginServer
+az acr list --resource-group pkar-aks-rg --query [].loginServer --output table
+az acr list --resource-group pkar-aks-rg --query [].{nnlogin:loginServer} --output table
+az acr list --resource-group pkar-aks-rg --query [].{ACRloginServer:loginServer} --output table
+az acr repository list -n nnaksacr -o table
+az acr repository show-tags --name nnaksacr --repository nndemo --output table
+```
