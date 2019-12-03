@@ -2,7 +2,7 @@
 Managed Kubernetes simplifies deployment, management and operations of Kubernetes, and allows developers to take advantage of Kubernetes without worrying about the underlying plumbing to get it up running and freeing up developer time to focus on the applications. Different Cloud Providers are offering this service – for example Google Kubernetes Engine (GKE), Amazon has Elastic Container Service for Kubernetes (EKS), Microsoft has Azure Kubernetes Service (AKS).
 Here we are going to setup AKS.
 
-#### Install Azure CLI and login to Azure
+### Setup Azure Kubernetes Service (AKS)
 Azure Kubernetes Service management can be done from a development VM as well as using Azure Cloud Shell.  
 In my setup, I’m using an CentOS VM and I’ve install Azure CLI locally. 
 
@@ -83,4 +83,5 @@ kubectl config current-context
 kubectl get nodes
 ```
 
-
+### Setup Azure Container Registry (ACR)
+Azure Container Registry (ACR) is a managed Docker registry service based on the open-source Docker Registry.  It is a secure private registry managed by Azure, and also a managed service so Azure handles the security, backend infrastructure and storage so the developers can focus on their applications. ACR allows you to store images for all types of container deployments. Below step-by-step process of ACR creation and integration with Azure Kubernetes Service (AKS) using Azure Service Principal.
