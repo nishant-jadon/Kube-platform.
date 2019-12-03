@@ -57,6 +57,10 @@ Now assign the service principal for your AKS cluster Contributor permissions on
   
 ```az role assignment create --assignee <appId> --scope $VNET_ID --role Contributor```
 
+##### -  Get the latest available Kubernetes version in your preferred region into a bash variable. 
+
+```version=$(az aks get-versions -l eastus --query 'orchestrators[-1].orchestratorVersion' -o tsv)```
+
 ##### -  Create an AKS cluster in the virtual network
 
 ```
@@ -72,6 +76,7 @@ az aks create \
     --vnet-subnet-id $SUBNET_ID \
     --generate-ssh-keys \
     --node-vm-size Standard_DS1_v2 \
+    --kubernetes-version $version \
     --service-principal <appId> \
     --client-secret <password>
 ```
@@ -121,8 +126,8 @@ Before login please verify if docker is installed. First download image from doc
 
 ```
 docker pull nginxdemos/hello
-docker tag nginxdemos/hello:latest pkar-aks-acr.azurecr.io/nndemo:v1
-docker push pkar-aks-acr.azurecr.io/nndemo:v1
+docker tag nginxdemos/hello:latest pkar-aks-acr.azurecr.io/pkarnginx:v1
+docker push pkar-aks-acr.azurecr.io/pkarnginx:v1
 az acr repository list -n pkar-aks-acr -o table
 ```
 
