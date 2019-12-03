@@ -135,7 +135,10 @@ az acr repository list -n pkar-aks-acr -o table
 
 - Get the id of the service principal configured for AKS
 
-```CLIENT_ID=$(az aks show --resource-group pkar-aks-rg --name pkar-aks-rg --query "servicePrincipalProfile.clientId" --output tsv)```
+```
+CLIENT_ID=$(az aks show --resource-group pkar-aks-rg --name pkar-aks-rg --query "servicePrincipalProfile.clientId" --output tsv)
+APPS_ID=$(az ad sp list --display-name nn-aks-cluster --query [].appId --output tsv)
+```
 
 - Get the resource ID of ACR
 
