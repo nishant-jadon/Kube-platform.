@@ -36,9 +36,15 @@ az account show --output table
 ```az network vnet create --resource-group pkar-aks-rg --name pkar-aks-vnet --address-prefixes 192.168.0.0/16 --subnet-name pkar-aks-subnet --subnet-prefix 192.168.1.0/24```
 
 ##### -  Create a service principal and assign permissions
+AKS uses service principal to access other azure services like ACR & others. Default role is contributor so use “–skip-assignment”. Other available roles are as follow:
+
+- Owner (pull, push, and assign roles to other users)
+- Contributor (pull and push)
+- Reader (pull only access)
+
 The following example output shows the application ID and password for your service principal. These values are used in additional steps to assign a role to the service principal and then create the AKS cluster: Copy output of following command
 
-```az ad sp create-for-rbac --skip-assignment```
+```az ad sp create-for-rbac -n "pkar-app-sp" --skip-assignment```
 
 To assign the correct delegations in the remaining steps, use the az network vnet show and az network vnet subnet show commands to get the required resource IDs. These resource IDs are stored as variables and referenced in the remaining steps:
 
@@ -85,3 +91,52 @@ kubectl get nodes
 
 ### Setup Azure Container Registry (ACR)
 Azure Container Registry (ACR) is a managed Docker registry service based on the open-source Docker Registry.  It is a secure private registry managed by Azure, and also a managed service so Azure handles the security, backend infrastructure and storage so the developers can focus on their applications. ACR allows you to store images for all types of container deployments. Below step-by-step process of ACR creation and integration with Azure Kubernetes Service (AKS) using Azure Service Principal.
+
+##### - Login to Azure using Azure CLI & set the Subscription
+
+```
+az login -u <username> -p <password>
+az account set --subscription "Microsoft Azure XXXX"
+az account show --output table
+az account show
+```
+
+##### -  Create Azure Container Registry (ACR)
+
+``` 
+az acr create --name pkar-aks-acr --resource-group pkar-aks-rg --sku standard --location eastus
+az acr list
+```
+
+##### - Login to ACR 
+Before login please verify if docker is installed.
+
+```
+az acr login -n pkar-aks-acr
+az acr list -o table
+```
+
+##### - Push docker image to ACR 
+Before login please verify if docker is installed. First download image from docker, tag the image then push to ACR.
+
+```
+docker pull nginxdemos/hello
+docker tag nginxdemos/hello:latest pkar-aks-acr.azurecr.io/nndemo:v1
+docker push pkar-aks-acr.azurecr.io/nndemo:v1
+az acr repository list -n pkar-aks-acr -o table
+```
+
+##### - Use ACR with AKS
+
+- Get the appId for ACR from Service pricipal which we created from earlier command.
+
+``` ```
+
+- Assign reader role to AKS Resource (get the app ID)
+
+```ACR_ID=$(az acr show --name pkar-aks-acr --resource-group pkar-aks-rg --query "id" --output tsv)```
+
+- Get the resource ID of ACR
+
+``` az role assignment create --assignee "<appId>" --role Reader --scope $ACR_ID```
+
