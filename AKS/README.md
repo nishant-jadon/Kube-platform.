@@ -23,7 +23,7 @@ sudo yum install azure-cli -y
 ##### - Login to Azure using Azure CLI & set the Subscription
 
 ```
-az login -u <username> -p <password>
+az login 
 az account set --subscription "Microsoft Azure XXXX"
 az account show --output table
 ```
@@ -33,7 +33,12 @@ az account show --output table
 
 ##### -  Create the Virtual Network (vnet) and the subnet 
 
-```az network vnet create --resource-group pkar-aks-rg --name pkar-aks-vnet --address-prefixes 192.168.0.0/16 --subnet-name pkar-aks-subnet --subnet-prefix 192.168.1.0/24```
+```
+az network vnet create --resource-group pkar-aks-rg --name pkar-aks-vnet --address-prefixes 10.20.0.0/16 --subnet-name pkar-aks-prod-subnet --subnet-prefix 10.20.1.0/24
+az network vnet subnet create --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --address-prefixes 10.20.2.0/24 -n pkar-aks-uat-subnet
+az network vnet subnet create --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --address-prefixes 10.20.3.0/24 -n pkar-aks-sit-subnet
+az network vnet create --resource-group pkar-aks-rg --name pkar-mgm-vnet --address-prefixes 10.30.0.0/16 --subnet-name pkar-mgm-bastion-subnet --subnet-prefix 10.30.1.0/24
+```
 
 ##### -  Create a service principal and assign permissions
 AKS uses service principal to access other azure services like ACR & others. Default role is contributor so use “–skip-assignment”. Other available roles are as follow:
@@ -50,18 +55,26 @@ To assign the correct delegations in the remaining steps, use the az network vne
 
 ```
 VNET_ID=$(az network vnet show --resource-group pkar-aks-rg --name pkar-aks-vnet --query id -o tsv)
-SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkar-aks-subnet --query id -o tsv)
+APPS_ID=$(az ad sp list --display-name pkar-app-sp --query [].appId --output tsv)
+PROD_SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkar-aks-prod-subnet --query id -o tsv)
+UAT_SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkar-aks-uat-subnet --query id -o tsv)
+SIT_SUBNET_ID=$(az network vnet subnet show --resource-group pkar-aks-rg --vnet-name pkar-aks-vnet --name pkar-aks-sit-subnet --query id -o tsv)
 ```
 
 Now assign the service principal for your AKS cluster Contributor permissions on the virtual network using the az role assignment create command. Provide your own <appId> as shown in the output from the previous command to create the service principal:
   
-```az role assignment create --assignee <appId> --scope $VNET_ID --role Contributor```
+```
+az role assignment create --assignee $APPS_ID --scope $PROD_SUBNET_ID --role Contributor
+az role assignment create --assignee $APPS_ID --scope $UAT_SUBNET_ID --role Contributor
+az role assignment create --assignee $APPS_ID --scope $SIT_SUBNET_ID --role Contributor
+az role assignment create --assignee $APPS_ID --scope $VNET_ID --role Contributor
+```
 
 ##### -  Get the latest available Kubernetes version in your preferred region into a bash variable. 
 
 ```version=$(az aks get-versions -l eastus --query 'orchestrators[-1].orchestratorVersion' -o tsv)```
 
-##### -  Create an AKS cluster in the virtual network
+##### -  Create an AKS PROD cluster in the PROD Subnet
 
 ```
 az aks create \
@@ -73,12 +86,25 @@ az aks create \
     --dns-service-ip 10.0.0.10 \
     --pod-cidr 10.244.0.0/16 \
     --docker-bridge-address 172.17.0.1/16 \
-    --vnet-subnet-id $SUBNET_ID \
+    --vnet-subnet-id $PROD_SUBNET_ID \
     --generate-ssh-keys \
     --node-vm-size Standard_DS1_v2 \
+    --nodepool-name paksappsnp
     --kubernetes-version $version \
-    --service-principal <appId> \
+    --service-principal $APPS_ID \
     --client-secret <password>
+```
+
+##### -  Add another nodepoll for infra in AKS PROD cluster.
+
+```
+az aks nodepool add \
+    --resource-group pkar-aks-rg \
+    --cluster-name pkar-aks-cluster \
+    --name paksinfranp \
+    --node-count 1 \
+    --node-vm-size Standard_DS1_v2 \
+    --kubernetes-version $version
 ```
 
 ##### -  Install kubectl 
