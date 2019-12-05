@@ -80,7 +80,7 @@ az role assignment create --assignee $APPS_ID --scope $VNET_ID --role Contributo
 az aks create \
     --resource-group pkar-aks-rg \
     --name pkar-aks-cluster \
-    --node-count 2 \
+    --node-count 1 \
     --network-plugin kubenet \
     --service-cidr 10.0.0.0/16 \
     --dns-service-ip 10.0.0.10 \
@@ -107,6 +107,17 @@ az aks nodepool add \
     --kubernetes-version $version
 ```
 
+### Scale node pool
+
+```
+az aks nodepool scale \
+    --resource-group pkar-aks-rg \
+    --cluster-name pkar-aks-cluster \
+    --name <NODEPOOL-NAME> \
+    --node-count 1 \
+    --no-wait
+```
+
 ##### -  Install kubectl 
 
 ```sudo az aks install-cli```
@@ -118,6 +129,25 @@ az aks get-credentials --resource-group pkar-aks-rg --name pkar-aks-cluster
 kubectl config get-clusters
 kubectl config current-context
 kubectl get nodes
+```
+
+##### -  Setup Bastion VM in Managment VNET
+
+```
+az vm create \
+    --resource-group pkar-aks-rg \
+    --name pkar-mgm-bastion-vm \
+    --vnet-name pkar-mgm-vnet \
+    --subnet pkar-mgm-bastion-subnet \
+    --image OpenLogic:CentOS:7.5:latest \
+    --size Standard_DS1_v2 \
+    --admin-username azureuser 
+    --ssh-key-value ~/.ssh/id_rsa.pub
+    
+openssl rsa -in ~/.ssh/id_rsa -outform pem > id_rsa.pem
+
+yum install putty curl git zip wget -y
+puttygen id_rsa.pem -o azure.ppk -O private    
 ```
 
 ### Setup Azure Container Registry (ACR)
