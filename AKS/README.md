@@ -150,6 +150,12 @@ yum install putty curl git zip wget -y
 puttygen id_rsa.pem -o azure.ppk -O private    
 ```
 
+##### -  Peering AKS VNET & Managment VNET
+
+```  
+az network vnet peering create -g pkar-aks-rg -n mgm-vnet-to-aks-vnet --vnet-name pkar-mgm-vnet --remote-vnet pkar-aks-vnet --allow-vnet-access
+```
+
 ### Setup Azure Container Registry (ACR)
 Azure Container Registry (ACR) is a managed Docker registry service based on the open-source Docker Registry.  It is a secure private registry managed by Azure, and also a managed service so Azure handles the security, backend infrastructure and storage so the developers can focus on their applications. ACR allows you to store images for all types of container deployments. Below step-by-step process of ACR creation and integration with Azure Kubernetes Service (AKS) using Azure Service Principal.
 
