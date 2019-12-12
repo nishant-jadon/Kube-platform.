@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: kubemon
+  labels:
+  name: alertmanager
+spec:
+  rules:
+    - host: alert.woagw.cloud-cafe.cf
+      http:
+        paths:
+          - backend:
+              serviceName: alertmanager
+              servicePort: 9093
