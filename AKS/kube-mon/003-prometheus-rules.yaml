@@ -14,31 +14,15 @@ data:
           annotations:
             message: Kubernetes API server down
           expr: |
-            up{job="kubernetes-apiserver"} == 0
+            up{job="kubernetes-apiservers"} == 0
           for: 5m
           labels:
             severity: critical
-        - alert: Kube Controller Down
+        - alert: Kube Proxy Down
           annotations:
-            message: Kubernetes Controller down
+            message: Kubernetes Proxy down
           expr: |
-            kube_pod_container_status_running{namespace="kube-system",pod="kube-controller-manager-kube-master"} == 0
-          for: 5m
-          labels:
-            severity: critical
-        - alert: Kube Scheduler Down
-          annotations:
-            message: Kubernetes Scheduler down
-          expr: |
-            kube_pod_container_status_running{namespace="kube-system",pod="kube-scheduler-kube-master"} == 0
-          for: 5m
-          labels:
-            severity: critical
-        - alert: Kube ETCD Down
-          annotations:
-            message: Kubernetes ETCD down
-          expr: |
-            kube_pod_container_status_running{namespace="kube-system",pod="etcd-kube-master"} == 0
+            kube_pod_container_status_running{container="kube-proxy",namespace="kube-system"} == 0
           for: 5m
           labels:
             severity: critical
@@ -46,7 +30,7 @@ data:
           annotations:
             message: Kubernetes DNS down
           expr: |
-            up{k8s_app="kube-dns",kubernetes_namespace="kube-system"} == 0
+            kube_pod_container_status_running{container="coredns",namespace="kube-system"} == 0
           for: 5m
           labels:
             severity: critical
@@ -54,15 +38,31 @@ data:
           annotations:
             message: Kubernetes Kubelet Down
           expr: |
-            up{job="kubernetes-kubelet"} == 0
+            up{job="kubelet"} == 0
           for: 5m
           labels:
             severity: critical            
+        - alert: Node Expoter Down
+          annotations:
+            message: Node Expoter Down
+          expr: |
+            up{job="kubernetes-nodes-exporter"} == 0
+          for: 5m
+          labels:
+            severity: critical
         - alert: Kube State Metric Down
           annotations:
             message: Kube State Metric Down
           expr: |
             up{job="kube-state-metrics"} == 0
+          for: 5m
+          labels:
+            severity: critical
+        - alert: Ingress Controller Down
+          annotations:
+            message: Kube Ingress Controller Down
+          expr: |
+            up{job="ingress-nginx"} == 0
           for: 5m
           labels:
             severity: critical
@@ -91,7 +91,6 @@ data:
           for: 5m
           labels:
             severity: critical
-            
         - alert: DaemonSet Rollout Stuck
           annotations:
             message: Only % of desired pods scheduled and ready for daemon
@@ -116,12 +115,11 @@ data:
           for: 5m
           labels:
             severity: critical              
-            
         - alert: Too Many Pods
           annotations:
-            message: 'Too Many Pods is running at on node {{ $labels.instance }} (current value: {{ $value }}).'
+            message: 'Too Many Pods is running at on node {{ $labels.node }} (current value: {{ $value }}).'
           expr: |
-            max(kubelet_running_pod_count{job="kubernetes-kubelet"}) by(instance) > 95
+            max(kubelet_running_pod_count{job="kubelet"}) by(node) > 95
           for: 5m
           labels:
             severity: warning
@@ -133,7 +131,6 @@ data:
           for: 5m
           labels:
             severity: critical
-
         - alert: Pod Waiting
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} is waiting for this reason ({{ $labels.reason }})'
@@ -142,7 +139,6 @@ data:
           for: 5m
           labels:
             severity: critical
-            
         - alert: Pod Frequently Restarting
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting frequently'
@@ -151,7 +147,6 @@ data:
           for: 5m
           labels:
             severity: critical            
-
         - alert: Kube Pod NotReady
           annotations:
             message: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state ({{ $labels.phase }}) for longer than 5 minutes.'
@@ -160,7 +155,87 @@ data:
           for: 5m
           labels:
             severity: critical
-
+        - alert: Container Killed
+          annotations:
+            summary: "Container killed (instance {{ $labels.instance }})"
+            description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            time() - container_last_seen > 60
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Container Volume Usage
+          annotations:
+            summary: "Container Volume usage (instance {{ $labels.instance }})"
+            description: "Container Volume usage is above 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            (1 - (sum(container_fs_inodes_free) BY (ip) / sum(container_fs_inodes_total) BY (ip)) * 100) > 80
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Container Volume IO Usage
+          annotations:
+            summary: "Container Volume IO usage (instance {{ $labels.instance }})"
+            description: "Container Volume IO usage is above 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            (sum(container_fs_io_current) BY (ip, name) * 100) > 80
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Kube Memory pressure
+          annotations:
+            summary: "Kubernetes MemoryPressure (instance {{ $labels.instance }})"
+            description: "{{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+          for: 5m
+          labels:
+            severity: error
+        - alert: Kube Disk pressure
+          annotations:
+            summary: "Kubernetes DiskPressure (instance {{ $labels.instance }})"
+            description: "{{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+          for: 5m
+          labels:
+            severity: error
+        - alert: Kube Out of disk
+          annotations:
+            summary: "Kubernetes OutOfDisk (instance {{ $labels.instance }})"
+            description: "{{ $labels.node }} has OutOfDisk condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+          for: 5m
+          labels:
+            severity: error
+        - alert: Kube PVC Pending
+          annotations:
+            summary: "Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})"
+            description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Volume Out Of DiskSpace
+          annotations:
+            summary: "Volume out of disk space (instance {{ $labels.instance }})"
+            description: "Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Statefulset Down
+          annotations:
+            summary: "StatefulSet down (instance {{ $labels.instance }})"
+            description: "A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+          for: 5m
+          labels:
+            severity: error
         - alert: Kube CPU Overcommit
           annotations:
             message: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
@@ -169,7 +244,6 @@ data:
           for: 5m
           labels:
             severity: warning
-
         - alert: Kube Memory Overcommit
           annotations:
             message: Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
@@ -205,6 +279,7 @@ data:
           for: 1m
           labels:
             severity: critical
+
       - name: Pods
         rules:
         - alert: Container restarted
@@ -217,43 +292,148 @@ data:
             severity: warning
         - alert: High Memory Usage of Container
           annotations:
-            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of Memory Limit
+            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.exported_namespace}} is using more than 75% of Memory Limit
           expr: |
-            ((( sum(container_memory_usage_bytes{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name)  / sum(container_spec_memory_limit_bytes{image!="",container_name!="POD",namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100 ) < +Inf ) > 75
+            (((sum by(exported_namespace, container_name, pod_name) (container_memory_usage_bytes{container_name!="POD",image!="",exported_namespace!="kube-system"}) / sum by(exported_namespace, container_name, pod_name) (container_spec_memory_limit_bytes{container_name!="POD",image!="",exported_namespace!="kube-system"})) * 100) < +Inf) > 75
           for: 5m
           labels:
             severity: warning
         - alert: High CPU Usage of Container
           annotations:
-            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of CPU Limit
+            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.exported_namespace}} is using more than 75% of CPU Limit
           expr: |
-            ((sum(irate(container_cpu_usage_seconds_total{image!="",container_name!="POD", namespace!="kube-system"}[30s])) by (namespace,container_name,pod_name) / sum(container_spec_cpu_quota{image!="",container_name!="POD", namespace!="kube-system"} / container_spec_cpu_period{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100)  > 75
+            ((sum by(exported_namespace, container_name, pod_name) (irate(container_cpu_usage_seconds_total{container_name!="POD",image!="",exported_namespace!="kube-system"}[30s])) / sum by(exported_namespace, container_name, pod_name) (container_spec_cpu_quota{container_name!="POD",image!="",exported_namespace!="kube-system"} / container_spec_cpu_period{container_name!="POD",image!="",exported_namespace!="kube-system"})) * 100) > 75
           for: 5m
           labels:
             severity: warning
+
+      - name: Ingress
+        rules:
+        - alert: HTTP Errors 4xx
+          annotations:
+            summary: "HTTP errors 4xx (instance {{ $labels.ingress }})"
+            description: "Too many HTTP requests with status 4xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            sum(rate(nginx_ingress_controller_request{ingress!="",status=~"^4.."}[1m])) / sum(rate(nginx_ingress_controller_request[1m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: error
+        - alert: HTTP Errors 5xx
+          annotations:
+            summary: "HTTP errors 5xx (instance {{ $labels.ingress }})"
+            description: "Too many HTTP requests with status 5xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            sum(rate(nginx_ingress_controller_request{ingress!="",status=~"^5.."}[1m])) / sum(rate(nginx_ingress_controller_request[1m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: error
+
       - name: Nodes
         rules:
         - alert: High Node Memory Usage
           annotations:
             summary: Node {{$labels.kubernetes_io_hostname}} has more than 80% memory used. Plan Capcity
           expr: |
-            (sum (container_memory_working_set_bytes{id="/",container_name!="POD"}) by (kubernetes_io_hostname) / sum (machine_memory_bytes{}) by (kubernetes_io_hostname) * 100) > 80
+            ((node_memory_MemTotal_bytes) - ((node_memory_MemFree_bytes) + (node_memory_Buffers_bytes) + (node_memory_Cached_bytes))) / (node_memory_MemTotal_bytes) * 100 > 80
           for: 5m
           labels:
             severity: critical
         - alert: High Node CPU Usage
           annotations:
-            summary: Node {{$labels.kubernetes_io_hostname}} has more than 80% allocatable cpu used. Plan Capacity.
+            summary: Node {{$labels.node}} has more than 80% allocatable cpu used. Plan Capacity.
           expr: |
-            (sum(rate(container_cpu_usage_seconds_total{id="/", container_name!="POD"}[1m])) by (kubernetes_io_hostname) / sum(machine_cpu_cores) by (kubernetes_io_hostname)  * 100) > 80
+            (sum by(node) (rate (container_cpu_usage_seconds_total{image!="",name=~"^k8s_.*"}[1m])) / sum by(node)  (machine_cpu_cores) * 100) > 80
           for: 5m
           labels:
             severity: critical
-        - alert: High Node Disk Usage
+        - alert: High Node Disk1 Usage root FS
           annotations:
-            summary: Node {{$labels.kubernetes_io_hostname}} has more than 85% disk used. Plan Capacity.
+            summary: Node {{$labels.instance}} has more than 90% disk used in {{$labels.agentpool}} Nodepool. Plan Capacity.
+            description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
           expr: |
-            (sum(container_fs_usage_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/",container_name!="POD"}) by (kubernetes_io_hostname) / sum(container_fs_limit_bytes{container_name!="POD",device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname)) * 100 > 85
+            node_filesystem_free_bytes{mountpoint ="/rootfs"} / node_filesystem_size_bytes{mountpoint ="/rootfs"} * 100 < 10
           for: 5m
           labels:
             severity: critical
+        - alert: High Node Disk2 Usage mnt FS
+          annotations:
+            summary: Node {{$labels.instance}} has more than 90% disk used in {{$labels.agentpool}} Nodepool. Plan Capacity.
+            description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            node_filesystem_free_bytes{mountpoint ="/rootfs/mnt"} / node_filesystem_size_bytes{mountpoint ="/rootfs/mnt"} * 100 < 10
+          for: 5m
+          labels:
+            severity: critical
+        - alert: Unusual Disk Read Rate
+          annotations:
+            summary: "Unusual disk read rate (instance {{ $labels.instance }})"
+            description: "Disk is probably reading too much data (> 50 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            sum by (instance,device) (irate(node_disk_read_bytes_total{device=~"sd[a-z]"}[2m])) / 1024 / 1024 > 50
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Unusual Disk Write Rate
+          annotations:
+            summary: "Unusual disk write rate (instance {{ $labels.instance }})"
+            description: "Disk is probably writing too much data (> 50 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            #sum by(instance,device) (irate(node_disk_written_bytes_total{device=~"sd[a-z]"}[2m])) / 1024 / 1024 > 50
+            sum by(instance,device) (irate(node_disk_written_bytes_total{device=~"sd[a-z]"}[2m])) / 1024 / 1024 > 25
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Unusual Disk Read Latency
+          annotations:
+            summary: "Unusual disk read latency (instance {{ $labels.instance }})"
+            description: "Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 100
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Unusual Network Throughput In
+          annotations:
+            summary: "Unusual network throughput in (instance {{ $labels.instance }})"
+            description: "Host network interfaces are probably receiving too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            sum by (instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Unusual Network Throughput Out
+          annotations:
+            summary: "Unusual network throughput out (instance {{ $labels.instance }})"
+            description: "Host network interfaces are probably sending too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            sum by (instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Out Of Inodes
+          annotations:
+            summary: "Out of inodes (instance {{ $labels.instance }})"
+            description: "Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint ="/rootfs"} * 100 < 10
+          for: 5m
+          labels:
+            severity: warning
+        - alert: Unusual Disk Write Latency
+          annotations:
+            summary: "Unusual disk write latency (instance {{ $labels.instance }})"
+            description: "Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > 100
+          for: 5m
+          labels:
+          severity: warning
+        - alert: High CPU Load
+          annotations:
+            summary: "High CPU load (instance {{ $labels.instance }})"
+            description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          expr: |
+            100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+          for: 5m
+          labels:
+            severity: warning
