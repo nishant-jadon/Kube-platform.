@@ -209,24 +209,6 @@ data:
           for: 5m
           labels:
             severity: error
-        - alert: Kube PVC Pending
-          annotations:
-            summary: "Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})"
-            description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
-          expr: |
-            kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
-          for: 5m
-          labels:
-            severity: warning
-        - alert: Volume Out Of DiskSpace
-          annotations:
-            summary: "Volume out of disk space (instance {{ $labels.instance }})"
-            description: "Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
-          expr: |
-            kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
-          for: 5m
-          labels:
-            severity: warning
         - alert: Statefulset Down
           annotations:
             summary: "StatefulSet down (instance {{ $labels.instance }})"
@@ -236,22 +218,6 @@ data:
           for: 5m
           labels:
             severity: error
-        - alert: Kube CPU Overcommit
-          annotations:
-            message: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
-          expr: |
-            sum(namespace:kube_pod_container_resource_requests_cpu_cores:sum) / sum(kube_node_status_allocatable_cpu_cores) > (count(kube_node_status_allocatable_cpu_cores)-1) / count(kube_node_status_allocatable_cpu_cores)
-          for: 5m
-          labels:
-            severity: warning
-        - alert: Kube Memory Overcommit
-          annotations:
-            message: Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
-          expr: |
-            sum(namespace:kube_pod_container_resource_requests_memory_bytes:sum) / sum(kube_node_status_allocatable_memory_bytes) > (count(kube_node_status_allocatable_memory_bytes)-1) / count(kube_node_status_allocatable_memory_bytes)
-          for: 5m
-          labels:
-            severity: warning
 
       - name: Deployment
         rules:
@@ -260,22 +226,6 @@ data:
             summary: Deployment {{$labels.deployment}} in {{$labels.namespace}} is currently having no pods running
           expr: |
             sum(kube_deployment_status_replicas{pod_template_hash=""}) by (deployment,namespace)  < 1
-          for: 1m
-          labels:
-            severity: critical
-        - alert: HPA Scaling Limited
-          annotations:
-            summary: HPA named {{$labels.hpa}} in {{$labels.namespace}} namespace has reached scaling limited state
-          expr: |
-            (sum(kube_hpa_status_condition{condition="ScalingLimited",status="true"}) by (hpa,namespace)) == 1
-          for: 1m
-          labels:
-            severity: critical
-        - alert: HPA at MaxCapacity
-          annotations:
-            summary: HPA named {{$labels.hpa}} in {{$labels.namespace}} namespace is running at Max Capacity
-          expr: |
-            ((sum(kube_hpa_spec_max_replicas) by (hpa,namespace)) - (sum(kube_hpa_status_current_replicas) by (hpa,namespace))) == 0
           for: 1m
           labels:
             severity: critical
@@ -307,6 +257,16 @@ data:
           labels:
             severity: warning
 
+        - alert: POD terminated
+          annotations:
+            description: 'Pod {{$labels.pod}} in namespace {{$labels.namespace}} has a container terminated for more than 10 minutes'
+            summary: 'Pod {{$labels.pod}} in namespace {{$labels.namespace}} in error status'
+          expr: |
+            kube_pod_container_status_terminated_reason{reason=~"OOMKilled|Error|ContainerCannotRun"} > 0
+          for: 10m
+          labels:
+            severity: page
+
       - name: Ingress
         rules:
         - alert: HTTP Errors 4xx
@@ -314,7 +274,7 @@ data:
             summary: "HTTP errors 4xx (instance {{ $labels.ingress }})"
             description: "Too many HTTP requests with status 4xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
           expr: |
-            sum(rate(nginx_ingress_controller_request{ingress!="",status=~"^4.."}[1m])) / sum(rate(nginx_ingress_controller_request[1m])) * 100 > 5
+            sum(rate(nginx_ingress_controller_requests{ingress!="",status=~"^4.."}[1m])) / sum(rate(nginx_ingress_controller_requests[1m])) * 100 > 5
           for: 5m
           labels:
             severity: error
@@ -323,7 +283,7 @@ data:
             summary: "HTTP errors 5xx (instance {{ $labels.ingress }})"
             description: "Too many HTTP requests with status 5xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
           expr: |
-            sum(rate(nginx_ingress_controller_request{ingress!="",status=~"^5.."}[1m])) / sum(rate(nginx_ingress_controller_request[1m])) * 100 > 5
+            sum(rate(nginx_ingress_controller_requests{ingress!="",status=~"^5.."}[1m])) / sum(rate(nginx_ingress_controller_requests[1m])) * 100 > 5
           for: 5m
           labels:
             severity: error
