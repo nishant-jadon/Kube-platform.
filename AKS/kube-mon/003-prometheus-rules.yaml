@@ -263,9 +263,9 @@ data:
             summary: 'Pod {{$labels.pod}} in namespace {{$labels.namespace}} in error status'
           expr: |
             kube_pod_container_status_terminated_reason{reason=~"OOMKilled|Error|ContainerCannotRun"} > 0
-          for: 10m
+          for: 5m
           labels:
-            severity: page
+            severity: warning
 
       - name: Ingress
         rules:
