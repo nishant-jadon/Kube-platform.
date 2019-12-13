@@ -142,6 +142,8 @@ az network vnet subnet update -g pkar-aks-rg --route-table $rt --ids $PROD_SUBNE
 ```
 ##### Ref: https://github.com/Azure/aks-engine/blob/master/docs/tutorials/custom-vnet.md
 
+
+
 ##### -  Setup Bastion VM in Managment VNET
 
 ```
@@ -160,6 +162,25 @@ openssl rsa -in ~/.ssh/id_rsa -outform pem > id_rsa.pem
 yum install putty curl git zip wget -y
 puttygen id_rsa.pem -o azure.ppk -O private    
 ```
+
+##### -  Install Helm, run the following commands:
+
+```
+curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+##### -  To create a ServiceAccount and associate it with the predefined cluster-admin role, use a ClusterRoleBinding, as below:
+
+```
+kubectl create serviceaccount -n kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+```
+
+##### -  Initialize Helm as shown below:
+
+```helm init --service-account tiller```
 
 ##### -  Peering AKS VNET & Managment VNET
 
